@@ -1,0 +1,225 @@
+ADDI X0, XZR, #128
+ADDI X1, XZR, #20
+ADD X27, X1, XZR
+SUBI SP, SP, #8
+STUR LR, [SP, #0]
+BL label_1
+BL label_2
+ADD X1, X27, XZR
+BL label_3
+HALT
+label_3:
+ADD X9, XZR, XZR
+B label_4
+label_4:
+SUBS X10, X1, X9
+B.GT label_5
+BR LR
+label_5:
+LSL X11, X9, #3
+ADD X11, X11, X0
+LDUR X12, [X11, #0]
+PRNT X12
+ADDI X9, X9, #1
+B label_4
+label_1:
+ADD X9, XZR, XZR
+label_9:
+SUB X10, X1, X9
+CBNZ X10, label_6
+B label_7
+label_6:
+SUB X11, X1, X9
+TIME X11
+ANDIS X14, X11, #63
+CBZ X14, label_8
+TIME X11
+label_8:
+ADDI X11, X11, #4
+EORI X11, X11, #-1
+ANDI X11, X11, #63
+LSL X12, X9, #3
+ADD X13, X0, X12
+STUR X11, [X13, #0]
+PRNT X13
+PRNT X11
+PRNL
+ADDI X9, X9, #1
+B label_9
+label_7:
+PRNL
+BR LR
+label_2:
+SUBI X2, X1, #1
+ADDI X1, XZR, #0
+ADD X21, X2, XZR
+PRNT X2
+PRNT X1
+PRNL
+SUBI SP, SP, #8
+STUR LR, [SP, #0]
+BL label_10
+label_10:
+SUBS X9, X1, X2
+PRNT X9
+PRNL
+B.LT label_11
+B label_12
+label_12:
+LDUR LR, [SP, #0]
+ADDI SP, SP, #8
+BR LR
+label_11:
+SUBI SP, SP, #8
+STUR LR, [SP, #0]
+SUBI SP, SP, #8
+STUR X0, [SP, #0]
+SUBI SP, SP, #8
+STUR X21, [SP, #0]
+BL label_13
+LDUR X21, [SP, #0]
+ADDI SP, SP, #8
+ADD X24, X0, XZR
+LDUR X0, [SP, #0]
+ADDI SP, SP, #8
+SUBI X25, X24, #1
+SUBS X12, X22, X25
+B.GE label_14
+SUBI X24, X24, #1
+ADD X23, X24, XZR
+ADD X1, X22, XZR
+ADD X2, X23, XZR
+BL label_10
+label_14:
+ADDI X24, X24, #1
+ADD X1, X24, XZR
+ADD X2, X21, XZR
+BL label_10
+B label_12
+label_13:
+SUBI SP, SP, #8
+STUR LR, [SP, #0]
+LSL X9, X1, #3
+ADD X10, X0, X9
+LDUR X19, [X10, #0]
+PRNT X19
+PRNL
+ADD X22, X1, XZR
+ADDI X20, X1, #1
+ADDI X21, X2, #0
+PRNT X22
+PRNT X20
+PRNT X21
+PRNL
+B label_15
+label_15:
+SUBS X12, X20, X21
+PRNT X12
+B.LE label_16
+B label_17
+label_16:
+ADD X1, X20, XZR
+ADD X2, X21, XZR
+ADD X3, X19, XZR
+SUBI SP, SP, #8
+STUR X0, [SP, #0]
+PRNT X1
+PRNT X2
+PRNT X3
+PRNL
+BL label_18
+ADD X20, X0, XZR
+PRNT X20
+LDUR X0, [SP, #0]
+ADDI SP, SP, #8
+ADD X1, X21, XZR
+ADD X2, X22, XZR
+ADD X3, X19, XZR
+SUBI SP, SP, #8
+STUR X0, [SP, #0]
+BL label_19
+ADD X21, X0, XZR
+PRNT X21
+LDUR X0, [SP, #0]
+ADDI SP, SP, #8
+SUBS X13, X20, X21
+B.LT label_20
+B label_15
+label_20:
+ADD X1, X20, XZR
+ADD X2, X21, XZR
+BL label_21
+B label_15
+label_17:
+SUB X14, X21, X22
+CBNZ X14, label_22
+B label_23
+label_22:
+ADD X1, X21, XZR
+ADD X2, X22, XZR
+BL label_21
+B label_23
+label_23:
+ADD X0, X21, XZR
+LDUR LR, [SP, #0]
+ADDI SP, SP, #8
+BR LR
+label_18:
+SUBS X9, X1, X2
+B.LE label_24
+B label_25
+label_24:
+LSL X10, X1, #3
+ADD X10, X0, X10
+LDUR X11, [X10, #0]
+SUBS X12, X11, X3
+B.LT label_26
+B label_25
+label_26:
+ADDI X1, X1, #1
+PRNT X1
+PRNL
+B label_18
+label_25:
+ADD X0, X1, XZR
+BR LR
+label_19:
+SUBS X9, X1, X2
+B.GT label_27
+B label_28
+label_27:
+LSL X10, X1, #3
+ADD X10, X10, X0
+LDUR X11, [X10, #0]
+SUBS X12, X11, X3
+B.GE label_29
+B label_28
+label_29:
+SUBI X1, X1, #1
+PRNT X1
+PRNL
+B label_19
+label_28:
+ADD X0, X1, XZR
+BR LR
+label_21:
+LSL X9, X1, #3
+ADD X10, X0, X9
+LDUR X11, [X10, #0]
+PRNL
+PRNL
+PRNL
+PRNT X11
+LSL X12, X2, #3
+ADD X13, X0, X12
+LDUR X14, [X13, #0]
+STUR X14, [X10, #0]
+PRNT X10
+PRNT X14
+STUR X11, [X13, #0]
+PRNT X13
+PRNT X11
+PRNL
+PRNL
+PRNL
+BR LR
