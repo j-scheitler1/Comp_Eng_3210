@@ -1,0 +1,294 @@
+// AUTHOR: Josh Scheitler
+// AUTHOR: Jason Bakke
+
+main:
+ADDI X0, XZR, #128   // Base Address for the array
+ADDI X1, XZR, #10    // N = 10
+ADD X27, X1, XZR     // X27 = N 
+SUBI SP, SP, #8      // Allocate space on Stack
+STUR LR, [SP, #0]    // Store LR on the Stack
+BL fill
+BL quicksort
+ADD X1, X27, XZR     // X1 = X27
+BL print
+HALT
+
+
+//// START OF PRINT FUNCTION
+print:
+ADD X9, XZR, XZR     // X9 = 0
+B print_check
+
+print_check:
+SUBS X10, X1, X9     // X10 = N - i
+B.GT print_body
+BR LR
+
+print_body:
+LSL X11, X9, #3      // X11 = i * 8
+ADD X11, X11, X0     // X11 = &a[i]
+LDUR X12, [X11, #0]  // X12 = a[i]
+PRNT X12             
+ADDI X9, X9, #1      // i++
+B print_check
+//// END OF PRINT FUNCTION
+
+//// START OF FILL FUNCTION
+// Arguement Registers
+// X0 = *a
+// X1 = N = 9 
+fill:
+ADD X9, XZR, XZR     // X9 = 0
+top:
+SUB X10, X1, X9      // X10 = N - i
+CBNZ X10, body       // Branch body if X10 not 0
+B end_fill           // Branch to end of fuction if n - i is 0
+body:
+SUB X11, X1, X9      // X11 = N - i
+TIME X11             // X11 = TIME
+ANDIS X14, X11, #62  // X14 = and X11 and #62
+CBZ X14, go          // Branch to go if X14 is 0
+TIME X11             // X11 = TIME
+
+go:
+ADDI X11, X11, #4
+EORI X11, X11, #65535
+ANDI X11, X11, #63
+LSL X12, X9, #3      // X12 = i * 8
+ADD X13, X0, X12     // X13 = base + temp 3
+STUR X11, [X13, #0]  // a[i] = temp2
+
+PRNT X13             // Print Address of X13
+PRNT X11             // Print Value in X13
+PRNL
+
+ADDI X9, X9, #1      // X9 = i + 1
+B top
+end_fill:
+PRNL
+BR LR
+//// END OF FILL FUNCTION
+
+/// START OF THE QUICKSORT FUNCTION
+// Arguement Registers 
+// X0 = *a
+// X1 = 0
+// X2 = n - 1
+quicksort:
+SUBI X2, X1, #1          // High (X2) = N - 1
+ADDI X1, XZR, #0         // Low (X1) = 0
+ADD X21, X2, XZR         // X27 = l
+PRNT X2                  // Print High
+PRNT X1                  // Print Low
+PRNL
+
+SUBI SP, SP, #8          // SP -16
+STUR LR, [SP, #0]        // Store LR in 8
+BL quicksort_recursive
+/// END OF THE QUICKSORT FUNCTION
+
+//// START OF THE QUICKSORT RECURSIVE FUNCTION
+// Arguement Registers
+// X0 = *a
+// X1 = 0
+// X2 = n - 1 = 8
+
+// Saved
+// X23 = p
+// X19 (p) = a[f]
+// X20 (i) = f + 1
+// X21 (j) = l
+// X22 = f
+
+quicksort_recursive:
+SUBS X9, X1, X2            // X9 = f - l and set flags
+B.LT body_quick_recursive  // If f < l then branch to body_quick_recursive
+B end_quicksort_recursive  // If temp1 > l then branch to end
+
+end_quicksort_recursive:
+LDUR LR, [SP, #0]
+ADDI SP, SP, #8
+BR LR                      // Branch back to main
+
+body_quick_recursive:
+SUBI SP, SP, #8            // SP - 8
+STUR LR, [SP, #0]          // Store LR
+SUBI SP, SP, #8            // SP - 8
+STUR X0, [SP, #0]          // Store *a on SP
+SUBI SP, SP, #8            // SP - 8
+STUR X21, [SP, #0]         // Store j/l on stack
+BL partition 
+LDUR X21, [SP, #0]         // Load j/l back
+ADDI SP, SP, #8            // SP + 8
+ADD X24, X0, XZR           // X24 = p
+LDUR X0, [SP, #0]          // X0 = *a
+ADDI SP, SP, #8            // SP + 8
+SUBI X25, X24, #1          // p - 1
+SUBS X12, X22, X25         // X12 = f - (p - 1)
+B.GE skip                  // Skip if X12 > 0
+SUBI X24, X24, #1          // X24 = p - 1
+ADD X23, X24, XZR          // X23 = p - 1
+ADD X1, X22, XZR           // X1 = f
+ADD X2, X23, XZR           // X2 = p - 1
+BL quicksort_recursive     // quicksort_recurse(a, f, p - 1);
+
+skip:
+ADDI X24, X24, #1          // X24 = p + 1
+ADD X1, X24, XZR           // X1 = p + 1  
+ADD X2, X21, XZR           // X2 = l
+BL quicksort_recursive     // quicksort_recurse(a, p + 1, l);
+B end_quicksort_recursive
+//// END OF THE QUICKSORT FUNCTION
+
+//// START OF THE PARTITION FUNCTION
+// Arguement
+// X0 = a
+// X1 = 0 or f
+// X2 = 8 or l
+
+// Saved 
+// X19 (p) = a[f]
+// X20 (i) = f + 1
+// X21 (j) = l
+// X22 = f
+partition:
+SUBI SP, SP, #8        // SP - 8
+STUR LR, [SP, #0]      // Store LR
+LSL X9, X1, #3         // X9 = f * 8
+ADD X10, X0, X9        // X10 = &a[f]
+LDUR X19, [X10, #0]    // X19 = a[f]
+ADD X22, X1, XZR       // X22 = f
+ADDI X20, X1, #1       // X20 = f + 1
+ADDI X21, X2, #0       // X21 = l
+B partition_body
+
+partition_body:
+SUBS X12, X20, X21     // X12 = i - j
+B.LE partition_while   
+B partition_if_two
+
+partition_while:
+ADD X1, X20, XZR       // X1 = i
+ADD X2, X21, XZR       // X2 = l
+ADD X3, X19, XZR       // X3 = p
+SUBI SP, SP, #8        // SP - 8
+STUR X0, [SP, #0]      // Store X0 on SP
+BL next_i
+ADD X20, X0, XZR       // X20 (i) = result of next i
+LDUR X0, [SP, #0]      // X0 = *a
+ADDI SP, SP, #8        // SP + 8
+ADD X1, X21, XZR       // X1 = j
+ADD X2, X22, XZR       // X2 = f
+ADD X3, X19, XZR       // X3 = p
+SUBI SP, SP, #8        // SP - 8
+STUR X0, [SP, #0]      // Store X0 on SP
+BL next_j
+ADD X21, X0, XZR
+LDUR X0, [SP, #0]
+ADDI SP, SP, #8 
+SUBS X13, X20, X21     // X13 = i - j
+B.LT partition_if     
+B partition_body
+
+partition_if:
+ADD X1, X20, XZR       // X1 = i
+ADD X2, X21, XZR       // X2 = j
+BL swap
+B partition_body
+
+partition_if_two:
+SUB X14, X21, X22      // X14 = j - f
+CBNZ X14, call_swap_2
+B end_partition
+
+call_swap_2:
+ADD X1, X21, XZR       // X1 = j
+ADD X2, X22, XZR       // X2 = f
+BL swap
+B end_partition
+
+
+end_partition:
+ADD X0, X21, XZR       // X0 = j
+LDUR LR, [SP, #0]      // Restore Link
+ADDI SP, SP, #8        // SP + 8
+BR LR
+//// END OF THE PARTITION FUNCTION
+
+//// START OF NEXT_I FUNCTION
+// Arguement Registers
+// X0 = a
+// X1 = i
+// X2 = l
+// X3 = p
+next_i:
+SUBS X9, X1, X2           // X9 = i - l
+B.LE check_array_i_less_p // branch if i <= l to check a[i] < p
+B end_next_i
+
+check_array_i_less_p:
+LSL X10, X1, #3           // X10 = i * 8
+ADD X10, X0, X10          // X10 = &a[i]
+LDUR X11, [X10, #0]       // X11 = a[i]
+SUBS X12, X11, X3         // X11 = a[i] - p
+B.LT increment_i
+B end_next_i 
+
+increment_i:              
+ADDI X1, X1, #1           // i++
+B next_i
+
+end_next_i:
+ADD X0, X1, XZR           // Return X0
+BR LR
+//// END OF NEXT_I FUNCTION
+
+//// START OF NEXT_J FUNCTION
+// Arguement Registers
+// X0 = a
+// X1 = j
+// X2 = f
+// X3 = p
+next_j:
+SUBS X9, X1, X2          // X9 = j - f
+B.GT check_array_j_greater_p
+B end_next_j
+
+check_array_j_greater_p:
+LSL X10, X1, #3          // X10 = j * 8
+ADD X10, X10, X0         // X10 = a[j]
+LDUR X11, [X10, #0]      // X11 = a[j]
+SUBS X12, X11, X3        // X12 = a[j] - p
+B.GE decrement_j
+B end_next_j
+
+decrement_j:
+SUBI X1, X1, #1          // j--
+B next_j
+
+end_next_j:
+ADD X0, X1, XZR          // Return X0
+BR LR
+//// END OF NEXT_J FUNCTION
+
+//// START OF SWAP FUNCTION
+// Arguements Registers
+// X0 = a
+// X1 = i
+// X2 = j
+swap:
+// tmp = a[i]
+LSL X9, X1, #3           // X9 = i*8
+ADD X10, X0, X9          // X10 = a[i]
+LDUR X11, [X10, #0]      // X11 = a[i]
+
+// a[i] = a[j]
+LSL X12, X2, #3          // X12 = j*8
+ADD X13, X0, X12         // X13 = a[j]
+LDUR X14, [X13, #0]      // X14 = a[j]
+STUR X14, [X10, #0]      // a[i] = a[j]
+
+// a[j] = tmp
+STUR X11, [X13, #0]      // a[j] = tmp 
+BR LR
+//// END OF SWAP FUNCTION
